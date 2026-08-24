@@ -11,8 +11,11 @@ namespace Palantir;
 public readonly record struct RevealedTrap(Vector3 Position, string Name);
 
 public enum CofferKind { Bronze, Silver, Gold, Mimic }
+public enum LandmarkKind { Passage, Return, Votife }
 
 public readonly record struct LiveCoffer(Vector3 Position, CofferKind Kind);
+public readonly record struct Landmarks(Vector3 position, LandmarkKind Kind);
+public readonly record struct LiveMobs(Vector3 position, uint baseId, uint BnpcId, float hitbox, float rotation, uint entityId, bool inCombat, string name);
 
 public enum Discovery
 {
@@ -49,6 +52,8 @@ public sealed partial class DeepDungeon(
 
     private volatile RevealedTrap[] _revealed = [];
     private volatile LiveCoffer[] _coffers = [];
+    private volatile Landmarks[] _landmarks = [];
+    private volatile LiveMobs[] _mobs = [];
     private volatile Vector3[] _hoards = [];
 
     private byte _floor;
@@ -62,7 +67,9 @@ public sealed partial class DeepDungeon(
     public bool HookActive => _hook is not null;
     public bool InDeepDungeon => Territories.IsDeepDungeon(_territory);
     public IReadOnlyList<RevealedTrap> Revealed => _revealed;
+    public IReadOnlyList<Landmarks> Landmarks => _landmarks;
     public IReadOnlyList<LiveCoffer> Coffers => _coffers;
+    public IReadOnlyList<LiveMobs> Mobs => _mobs;
 
     public IReadOnlyList<Vector3> Hoards => _hoards;
 

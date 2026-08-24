@@ -22,6 +22,15 @@ public class RenderCategory
     public bool Fill { get; set; } = true;
 }
 
+public class MobCategory
+{
+    public bool Enabled { get; set; }
+    public int Distance { get; set; } = 60;
+    public Vector4 Colour { get; set; }
+    public RenderMode Mode { get; set; } = RenderMode.DirectX;
+    public bool Label { get; set; } = true;
+}
+
 public class Configuration : IPluginConfiguration
 {
     public const string DefaultServer = "https://palantir.puni.sh";
@@ -49,9 +58,18 @@ public class Configuration : IPluginConfiguration
     public RenderCategory Hoards { get; set; } =
         new() { Colour = new Vector3(1f, 0.84f, 0f), Integrity = 2, Label = true }; // #FFD600
 
+    public RenderCategory Passage { get; set; } = new() { Colour = new Vector3(0.55f, 0.75f, 1.00f), Label = true }; // #8CBFFF
+    public RenderCategory Return { get; set; } = new() { Colour = new Vector3(0.60f, 0.90f, 0.60f), Label = true }; // #99E699
+    public RenderCategory Votife { get; set; } = new() { Colour = new Vector3(0.75f, 0.60f, 0.95f), Label = true }; // #BF99F2
+
     public RenderCategory BronzeCoffers { get; set; } = new() { Colour = new Vector3(0.72f, 0.45f, 0.20f) }; // #B87333
     public RenderCategory SilverCoffers { get; set; } = new() { Colour = new Vector3(0.75f, 0.78f, 0.82f) }; // #BFC7D1
     public RenderCategory GoldCoffers { get; set; } = new() { Colour = new Vector3(1f, 0.88f, 0.35f) };      // #FFE059
+
+    public MobCategory SightMobs { get; set; } = new() { Enabled = true, Colour = new Vector4(1f, 0f, 0f, 0.5f) };
+    public MobCategory ProximityMobs { get; set; } = new() { Enabled = true, Colour = new Vector4(1f, 0f, 0f, 0.5f) };
+    public MobCategory SoundMobs { get; set; } = new() { Enabled = true, Colour = new Vector4(0.5f, 0.0f, 0.5f, 0.5f) };
+    public MobCategory PatrolMobs { get; set; } = new() { Enabled = true, Colour = new Vector4(1f, 0f, 0f, 1f), Distance = 100 };
 
     public bool MimicCoffers { get; set; }
 
