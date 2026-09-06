@@ -66,10 +66,10 @@ public class Configuration : IPluginConfiguration
     public RenderCategory SilverCoffers { get; set; } = new() { Colour = new Vector3(0.75f, 0.78f, 0.82f) }; // #BFC7D1
     public RenderCategory GoldCoffers { get; set; } = new() { Colour = new Vector3(1f, 0.88f, 0.35f) };      // #FFE059
 
-    public MobCategory SightMobs { get; set; } = new() { Enabled = true, Colour = new Vector4(1f, 0f, 0f, 0.5f) };
-    public MobCategory ProximityMobs { get; set; } = new() { Enabled = true, Colour = new Vector4(1f, 0f, 0f, 0.5f) };
-    public MobCategory SoundMobs { get; set; } = new() { Enabled = true, Colour = new Vector4(0.5f, 0.0f, 0.5f, 0.5f) };
-    public MobCategory PatrolMobs { get; set; } = new() { Enabled = true, Colour = new Vector4(1f, 0f, 0f, 1f), Distance = 100 };
+    public MobCategory SightMobs { get; set; } = new() { Colour = new Vector4(1f, 0f, 0f, 0.5f) };
+    public MobCategory ProximityMobs { get; set; } = new() { Colour = new Vector4(1f, 0f, 0f, 0.5f) };
+    public MobCategory SoundMobs { get; set; } = new() { Colour = new Vector4(0.5f, 0.0f, 0.5f, 0.5f) };
+    public MobCategory PatrolMobs { get; set; } = new() { Colour = new Vector4(1f, 0f, 0f, 1f), Distance = 100 };
 
     public bool MimicCoffers { get; set; }
 
