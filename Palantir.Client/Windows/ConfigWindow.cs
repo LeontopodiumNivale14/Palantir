@@ -7,6 +7,7 @@ using Dalamud.Interface.ImGuiFileDialog;
 using Dalamud.Interface.Textures;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
+using Dalamud.Interface.Utility.Table;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin.Services;
 using Palantir.Common;
@@ -110,6 +111,16 @@ public sealed class ConfigWindow : Window
         {
             if (coffers.Success)
                 DrawCofferSection();
+        }
+        using (var landmarks = ImRaii.Header("Landmarks", ImGuiTreeNodeFlags.None))
+        {
+            if (landmarks.Success)
+                DrawLandMarkSection();
+        }
+        using (var mobs = ImRaii.Header("Mob Aggro", ImGuiTreeNodeFlags.None))
+        {
+            if (mobs.Success)
+                DrawMobSelection();
         }
 
         ImGui.Spacing();
@@ -233,7 +244,46 @@ public sealed class ConfigWindow : Window
             _config.Save();
         }
     }
+    private void DrawRow(string label, MobCategory category, bool crowdSourced, uint? icon = null)
+    {
+        using var _ = ImRaii.PushId(label);
 
+        NameCell(label, icon: icon);
+
+        ImGui.TableNextColumn();
+        Check("##on", category.Enabled, v => category.Enabled = v);
+
+        using var disabled = ImRaii.Disabled(!category.Enabled);
+
+        ImGui.TableNextColumn();
+        Check("##label", category.Label, v => category.Label = v);
+
+        ImGui.TableNextColumn();
+        DrawColour(category);
+
+        ImGui.TableNextColumn();
+        ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
+        DistanceSlider(category);
+
+        if (!crowdSourced)
+            return;
+
+        ImGui.TableNextColumn();
+        ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
+
+        using var mode = ImRaii.Combo("##mode", category.Mode.ToString());
+        if (!mode.Success)
+            return;
+
+        foreach (var option in RenderModes)
+        {
+            if (!ImGui.Selectable(option.ToString(), category.Mode == option))
+                continue;
+
+            category.Mode = option;
+            _config.Save();
+        }
+    }
     private void DrawMergeToggle()
     {
         var traps = _config.Traps;
@@ -291,7 +341,9 @@ public sealed class ConfigWindow : Window
         using var _ = ImRaii.PushId("Mimic");
 
         NameCell("Mimic",
-            "Only found in Palace of the Dead, on floor 49 and below. Drawn with " +
+            "Only can be detected as bronze chest in\n" +
+            "POTD: <= Floor 49" +
+            "HoH/EO/PT: <= Floor 29 " +
             "the trap colour and distance above, and always drawn in DirectX mode.",
             ChestBronze);
 
@@ -308,6 +360,60 @@ public sealed class ConfigWindow : Window
         ImGui.TableNextColumn();
         ImGui.AlignTextToFramePadding();
         ImGui.TextDisabled("uses display settings of traps");
+    }
+    private void DrawMobSelection()
+    {
+        using var table = ImRaii.Table("##mobInfo", 6, ImGuiTableFlags.SizingFixedFit);
+        if (!table.Success)
+            return;
+
+        ImGui.TableSetupColumn("Type", ImGuiTableColumnFlags.WidthFixed, NameWidth);
+        ImGui.TableSetupColumn("On", ImGuiTableColumnFlags.WidthFixed, Fit("On"));
+        ImGui.TableSetupColumn("Label", ImGuiTableColumnFlags.WidthFixed, Fit("Label"));
+        ImGui.TableSetupColumn("Colour", ImGuiTableColumnFlags.WidthFixed, Fit("Colour"));
+        ImGui.TableSetupColumn("Render Distance", ImGuiTableColumnFlags.WidthStretch);
+        ImGui.TableSetupColumn("Mode", ImGuiTableColumnFlags.WidthFixed, Math.Max(Fit("Mode", icon: true), 90 * ImGuiHelpers.GlobalScale));
+        
+
+        ImGui.TableNextRow(ImGuiTableRowFlags.Headers);
+        Header("Type");
+        Header("On");
+        Header("Label");
+        Header("Colour");
+        Header("Render Distance", DistanceHelp);
+        Header("Mode",
+               "DirectX is the default, will show the kind of agro around that mob\n" +
+               "Patrol mobs will use both the facing arrow, and the aggro type that it is if enabled.\n\n" +
+               "VFX uses the game's own omen effects. They look more native and sit to the ground, but" +
+               "anything in front of them hids them. Easy to mistake for an enemies attack telegraph.");
+
+        DrawRow("Sight", _config.SightMobs, true, 240201);
+        DrawRow("Proximity", _config.ProximityMobs, true, 240212);
+        DrawRow("Sound", _config.SoundMobs, true, 230426);
+        DrawRow("Patrol", _config.PatrolMobs, false, 240213);
+    }
+    private void DrawLandMarkSection()
+    {
+        using var table = ImRaii.Table("##landmarks", 5, ImGuiTableFlags.SizingFixedFit);
+        if (!table.Success)
+            return;
+
+        ImGui.TableSetupColumn("Landmark", ImGuiTableColumnFlags.WidthFixed, NameWidth);
+        ImGui.TableSetupColumn("On", ImGuiTableColumnFlags.WidthFixed, Fit("On"));
+        ImGui.TableSetupColumn("Label", ImGuiTableColumnFlags.WidthFixed, Fit("Label"));
+        ImGui.TableSetupColumn("Colour", ImGuiTableColumnFlags.WidthFixed, Fit("Colour"));
+        ImGui.TableSetupColumn("Render Distance", ImGuiTableColumnFlags.WidthStretch);
+
+        ImGui.TableNextRow(ImGuiTableRowFlags.Headers);
+        Header("Landmark");
+        Header("On");
+        Header("Label");
+        Header("Colour");
+        Header("Render Distance", DistanceHelp);
+
+        DrawRow("Passage", _config.Passage, crowdSourced: false, 060908);
+        DrawRow("Return", _config.Return, crowdSourced: false, 060906);
+        DrawRow("Votife", _config.Votife, crowdSourced: false, 063988);
     }
     
     private static float Fit(string header, bool icon = false) =>
@@ -364,11 +470,26 @@ public sealed class ConfigWindow : Window
             category.Distance = distance;
         SaveOnRelease();
     }
+    private void DistanceSlider(MobCategory category)
+    {
+        var distance = category.Distance;
+        if (ImGui.SliderInt("##distance", ref distance, 20, 150))
+            category.Distance = distance;
+        SaveOnRelease();
+    }
 
     private void DrawColour(RenderCategory category)
     {
         var colour = category.Colour;
         if (ImGui.ColorEdit3("##colour", ref colour, ImGuiColorEditFlags.NoInputs))
+            category.Colour = colour;
+        SaveOnRelease();
+    }
+
+    private void DrawColour(MobCategory category)
+    {
+        var colour = category.Colour;
+        if (ImGui.ColorEdit4("##colour", ref colour, ImGuiColorEditFlags.NoInputs))
             category.Colour = colour;
         SaveOnRelease();
     }
