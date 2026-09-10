@@ -56,11 +56,15 @@ internal static class DungeonObjects
         1036, 1037, 1038, 1039, 1040, 1041, 1042, 1043, 1044,
         1045, 1046, 1047, 1048, 1049,
         // EO
-        // not yet scraped these IDs
-        // PT
-        // not yet scraped these IDs either lol
+        1541, 1542, 1543, 1544, 1545, 1546, 1547, 1548, 1549, 
+        1550, 1551, 1552, 1553, 1554,
+        // PT (Your welcome...but also might be missing one here in PT? Need to find)
+        1882, 1884, 1885, 1886, 1888, 1889, 1890, 1891, 1892, 
+        1893, 1906, 1907, 1908,
     ];
     
-    // the bronze coffer that is really a mimic, PotD <= floor 49 only
+    // the bronze coffer that is really a mimic
+    // Potd <= 49 
+    // HoH / EO / PT <= 29
     public const uint MimicCoffer = 2006020;
 }
