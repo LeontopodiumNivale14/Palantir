@@ -1,13 +1,10 @@
 using Dalamud.Game.ClientState.Conditions;
-using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Game.ClientState.Objects.Types;
 using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using FFXIVClientStructs.FFXIV.Client.Game.Event;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
 using Palantir.Common;
-using System.Numerics;
-using System.Reflection.Metadata.Ecma335;
 using ObjectKind = Dalamud.Game.ClientState.Objects.Enums.ObjectKind;
 using Vector3 = System.Numerics.Vector3;
 
@@ -125,7 +122,6 @@ public sealed partial class DeepDungeon
         List<LiveCoffer> coffers = [];
         List<Landmarks> landmarks = [];
         List<Vector3> hoards = [];
-        List<LiveMobs> mobs = [];
         var revealedChanged = false;
 
         foreach (var obj in objects)
@@ -144,8 +140,6 @@ public sealed partial class DeepDungeon
                 landmarks.Add(new(obj.Position, LandmarkKind.Return));
             else if (DungeonObjects.Candelabra == baseId)
                 landmarks.Add(new(obj.Position, LandmarkKind.Votife));
-            // else if (IsMob(obj) is { } mob)
-                // mobs.Add(mob);
 
             var cell = MarkerId.Normalize(obj.Position.X, obj.Position.Y, obj.Position.Z);
             var key = (baseId, cell.X, cell.Y, cell.Z);
@@ -170,7 +164,6 @@ public sealed partial class DeepDungeon
         _coffers = [.. coffers];
         _hoards = [.. hoards];
         _landmarks = [.. landmarks];
-        // _mobs = [.. mobs];
 
         if (revealedChanged)
         {
@@ -189,39 +182,15 @@ public sealed partial class DeepDungeon
         _ => null,
     };
 
-    // Leaving this implentation here for you to debate on. It WORKS. It's just not great with moving objects.
-    // Aggro ranges update with the ticks and looks and feels... janky unfort
-    private static unsafe LiveMobs? IsMob(IGameObject obj)
-    {
-        if (!obj.IsValid() || obj is not IBattleNpc) return null;
-        else if (obj is IBattleNpc battleNpc)
-        {
-            bool inCombat = ((BattleChara*)obj.Address)->Character.InCombat;
-
-
-            LiveMobs mob = new()
-            {
-                baseId = obj.BaseId,
-                entityId = obj.EntityId,
-                position = obj.Position,
-                hitbox = obj.HitboxRadius,
-                rotation = obj.Rotation,
-                inCombat = inCombat,
-                BnpcId = battleNpc.NameId,
-                name = battleNpc.Name.ToString(),
-            };
-            return mob;
-        }
-        else
-            return null;
-    }
-
     private unsafe void MobList()
     {
         List<LiveMobs> mobs = new();
         foreach (var obj in objects)
         {
             if (!obj.IsValid())
+                continue;
+
+            if (!obj.IsTargetable)
                 continue;
 
             if (obj is IBattleNpc battleNpc)
