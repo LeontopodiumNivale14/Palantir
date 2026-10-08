@@ -32,6 +32,7 @@ public sealed class Plugin : IDalamudPlugin
     private readonly Network _network;
     private readonly DeepDungeon _dungeon;
     private readonly Renderer _renderer;
+    private readonly Ipc _ipc;
     private readonly MainWindow _main;
     private readonly ConfigWindow _settings;
 
@@ -47,6 +48,7 @@ public sealed class Plugin : IDalamudPlugin
         _network = new Network(_config, Log);
         _dungeon = new DeepDungeon(_config, _storage, _network, ClientState, Condition, ObjectTable, Framework, GameInterop, Log);
         _renderer = new Renderer(_config, _dungeon, ObjectTable, GameGui, PluginInterface, Log);
+        _ipc = new Ipc(PluginInterface, _dungeon);
 
         _settings = new ConfigWindow(_config, _network, Framework, Texture, _storage, _dungeon);
         var minimap = new MinimapWindow(_config, _dungeon, Texture);
@@ -63,6 +65,7 @@ public sealed class Plugin : IDalamudPlugin
 
         _dungeon.Start();
         _renderer.Start();
+        _ipc.Start();
         
         if (_config.AutoConnect)
             _ = _network.EnableAsync(_config.SelectedServer);
@@ -85,6 +88,7 @@ public sealed class Plugin : IDalamudPlugin
         _windows.RemoveAllWindows();
         CommandManager.RemoveHandler(Command);
         
+        _ipc.Dispose();
         _renderer.Dispose();
         _dungeon.Dispose();
 
