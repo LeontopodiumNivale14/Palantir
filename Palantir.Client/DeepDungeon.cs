@@ -78,15 +78,6 @@ public sealed partial class DeepDungeon(
 
     public IReadOnlyList<Vector3> Hoards => _hoards;
 
-    public Vector3[] KnownTraps
-    {
-        get
-        {
-            lock (_markers)
-                return [.. _markers.Values.Where(m => m.Type == MarkerType.Trap).Select(m => new Vector3(m.X, m.Y, m.Z))];
-        }
-    }
-
     public IReadOnlyList<MarkerRow> Visible
     {
         get

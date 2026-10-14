@@ -1,3 +1,4 @@
+using System.Numerics;
 using Dalamud.Plugin.Services;
 using Microsoft.EntityFrameworkCore;
 using Palantir.Common;
@@ -53,6 +54,14 @@ public sealed class Storage(string path, IPluginLog log) : IDisposable
         if (!Available) return [];
         await using var db = new MarkerDb(_options);
         return await db.Markers.Where(m => m.Territory == territory).ToListAsync();
+    }
+
+    public Vector3[] Traps(ushort territory)
+    {
+        if (!Available) return [];
+        using var db = new MarkerDb(_options);
+        return db.Markers.Where(m => m.Territory == territory && m.Type == MarkerType.Trap)
+            .Select(m => new Vector3(m.X, m.Y, m.Z)).ToArray();
     }
 
     public async Task<List<MarkerRow>> Unsynced(ushort territory)
